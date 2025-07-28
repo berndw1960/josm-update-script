@@ -1,5 +1,9 @@
 #!/bin/bash
-#
+
+# Bernd Weigelt:
+# Das Script und die zugehörige Konfigurtiosdatei wurde an aktuelle Linuxversionen angepasst
+# Es funktioniertsicher mit OpenSUSE seit vielen Jahren
+
 # Copyright (C) 2012 "Cobra" from <http://www.openstreetmap.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -52,7 +56,6 @@
 usage="Benutzung: `basename $0` [-h] [-j jar-Datei] [-l] [-o] [-q] [-r Revision] [-u] [-v Version] [Dateien]"
 # global variables
 rev_tested=0
-rev_tested=0
 rev_nightly=0
 rev_local=0
 rev_svn=0
@@ -63,6 +66,8 @@ update=0
 bequiet=0
 offline=0
 svn=0
+# error messages, because off missing parameters
+java_parameter=" --add-exports=java.base/sun.security.action=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.spi=ALL-UNNAMED "
 
 # if $dir doesn't exist, create it (initial setup):
 if [ -d $dir ]; then :
@@ -322,9 +327,13 @@ fi
 	# use aoss only if it's installed
 	aoss > /dev/null 2>&1
 	if [ $? -eq 1 ]; then
-		aoss java -jar -Xmx$mem -Dsun.java2d.opengl=$useopengl $jarfile $@ >~/.josm/josm.log 2>&1 &
+	    # enable to start with AggressiveHeap
+        aoss java $java_parameter -XX:+AggressiveHeap -Dsun.java2d.opengl=$useopengl -jar $jarfile $@ >~/.josm/josm.log 2>&1 &
+		# enable start with predefined ram
+		#aoss java $java_parameter -jar -Xmx$mem -Dsun.java2d.opengl=$useopengl $jarfile $@ >~/.josm/josm.log 2>&1 &
 	else
-		java -jar -Xmx$mem -Dsun.java2d.opengl=$useopengl $jarfile $@ >~/.josm/josm.log 2>&1 &
+        java $java_parameter -XX:+AggressiveHeap -Dsun.java2d.opengl=$useopengl -jar $jarfile $@ >~/.josm/josm.log 2>&1 &
+		#java -jar $java_parameter -Xmx$mem -Dsun.java2d.opengl=$useopengl $jarfile $@ >~/.josm/josm.log 2>&1 &
 	fi
 
 	josmpid=$!
